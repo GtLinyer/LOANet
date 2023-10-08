@@ -1,0 +1,45 @@
+seed_everything: 7
+# ckpt_path: ""  # for continue training
+trainer:
+  enable_checkpointing: true
+  callbacks:
+    - class_path: pytorch_lightning.callbacks.LearningRateMonitor
+      init_args:
+        logging_interval: epoch
+    - class_path: pytorch_lightning.callbacks.ModelCheckpoint
+      init_args:
+        save_top_k: 5
+        monitor: v_m_IoU
+        mode: max
+        filename: '{epoch}-{step}-{v_m_IoU:.4f}-{t_m_IoU:.4f}'
+  strategy: ddp # _find_unused_parameters_false
+  accelerator: gpu
+  devices: 2
+  precision: 16
+  check_val_every_n_epoch: 2
+  max_epochs: 200
+model:
+  alpha: 0.25
+  gamma: 2
+  size_average: True
+  num_classes: 3
+  in_channels: 3
+  growth_rate: 24
+  num_layers:
+    - 6
+    - 6
+    - 18
+    - 6
+  reduction: 0.5
+  p_channels: 96
+  u_channels: 64
+  attention_mid_channels: 512
+  attention_scale: 8
+  dropout_rate: 0.2
+  learning_rate: 0.01
+  patience: 6
+data:
+  data_type: 'ours'
+  batch_size: 8
+  num_workers: 16
+  drop_last: True
